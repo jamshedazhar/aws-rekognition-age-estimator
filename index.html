@@ -1,0 +1,80 @@
+<html>
+   <head>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+      <title>Age estimation</title>
+   </head>
+   <body>
+      <h1>Age estimation: Upload file</h1>
+      <hr>
+      <table width="100%">
+      <col width="50%">
+        <tr>
+          <td>
+            <input type="file" id="file">
+            <p id="image"></p>
+          </td>
+          <td>
+            <p id="status"></p>
+            <p id="result"></p>
+          </td>
+        </tr>
+      </table>
+      
+      <div>
+        
+      </div>
+      <style type="text/css">
+        #status { white-space: pre; font-family: monospace; }
+      </style>
+      <script>
+         $("#file" ).change(function(event) {
+           const file = event.target.files[0];
+           event.preventDefault();
+           if(file == null){
+             return alert('No file selected.');
+           } 
+           else {
+            document.getElementById("image").innerHTML = "";
+            document.getElementById("status").innerHTML = "";
+            document.getElementById("result").innerHTML = "";
+
+            if(file.type.startsWith("image")){
+              var img = document.createElement("img");
+              img.setAttribute("src", URL.createObjectURL(file));
+              img.setAttribute("width", "100%");
+              document.getElementById("image").appendChild(img);
+
+             $.get( 'sign-url/'+file.name+"/"+file.type).done(function(response){
+               document.getElementById("status").innerHTML = "Uploading "+ file.name+ " ...";
+               $.ajax(response.url, {
+                 processData: false,
+                 crossDomain: true,
+                 contentType: file.type,
+                 type: 'PUT',
+                 data: file,
+                 success: function(resp) {
+                   document.getElementById("status").innerHTML = file.name +" has been uploaded.</br>Analyzing the Image...</br>";
+                   $.get('analyze/'+ response.key).done(function(res){
+                          if(res.faceData.err){
+
+                            document.getElementById("status").appendChild(document.createTextNode(JSON.stringify(res.faceData.err, null, 4)));
+                          }
+                          else {
+                            document.getElementById("status").appendChild(document.createTextNode(res.faceData, null, 4));
+                          var pResult = document.getElementById("result");
+                          pResult.innerHTML = "";
+                          for(var x in res.faceData){
+                            pResult.innerHTML += res.faceData[x];
+                          }
+                        }
+                   });
+                 }
+               });
+             });
+            }
+          }
+         });   
+         
+      </script>
+   </body>
+</html>

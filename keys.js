@@ -1,3 +1,5 @@
+const bucketName = Math.floor(Math.random() * 1000000000);
+
 module.exports.BucketName = () => {
-   return "jam1234";
+   return "rekognition-"+bucketName;
 }
